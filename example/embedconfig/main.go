@@ -4,8 +4,10 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"os"
 
 	"github.com/anthhub/forwarder"
+	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 //go:embed kubeconfig
@@ -20,7 +22,13 @@ func main() {
 		},
 	}
 
-	ret, err := forwarder.WithForwardersEmbedConfig(context.Background(), options, kubeconfigBytes)
+	stream := genericclioptions.IOStreams{
+		In:     os.Stdin,
+		Out:    os.Stdout,
+		ErrOut: os.Stderr,
+	}
+
+	ret, err := forwarder.WithForwardersEmbedConfig(context.Background(), stream, options, kubeconfigBytes)
 	if err != nil {
 		panic(err)
 	}
