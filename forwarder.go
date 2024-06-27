@@ -23,7 +23,7 @@ import (
 var once sync.Once
 
 // It is to forward port whith kubeconfig bytes.
-func WithForwardersEmbedConfig(ctx context.Context, logStreams genericclioptions.IOStreams, options []*Option, kubeconfigBytes []byte) (*Result, error) {
+func WithForwardersEmbedConfig(ctx context.Context, options []*Option, kubeconfigBytes []byte, logStreams *genericclioptions.IOStreams) (*Result, error) {
 	kubeconfigGetter := func() (*clientcmdapi.Config, error) {
 		config, err := shimLoadConfig(kubeconfigBytes)
 		if err != nil {
@@ -37,12 +37,12 @@ func WithForwardersEmbedConfig(ctx context.Context, logStreams genericclioptions
 		return nil, err
 	}
 
-	return forwarders(ctx, logStreams, options, config)
+	return forwarders(ctx, options, config, logStreams)
 }
 
 // It is to forward port for k8s cloud services.
 // If `kubeconfigPath` is empty, the default kubeconfig location is used (e.g. `~/.kube/config`)
-func WithForwarders(ctx context.Context, logStreams genericclioptions.IOStreams, options []*Option, kubeconfigPath string) (*Result, error) {
+func WithForwarders(ctx context.Context, options []*Option, kubeconfigPath string, logStreams *genericclioptions.IOStreams) (*Result, error) {
 	if kubeconfigPath == "" {
 		home, _ := os.UserHomeDir()
 
@@ -54,16 +54,16 @@ func WithForwarders(ctx context.Context, logStreams genericclioptions.IOStreams,
 		return nil, err
 	}
 
-	return forwarders(ctx, logStreams, options, config)
+	return forwarders(ctx, options, config, logStreams)
 }
 
 // It is to forward port with restclient.Config.
-func WithRestConfig(ctx context.Context, logStreams genericclioptions.IOStreams, options []*Option, config *restclient.Config) (*Result, error) {
-	return forwarders(ctx, logStreams, options, config)
+func WithRestConfig(ctx context.Context, options []*Option, config *restclient.Config, logStreams *genericclioptions.IOStreams) (*Result, error) {
+	return forwarders(ctx, options, config, logStreams)
 }
 
 // It is to forward port for k8s cloud services.
-func forwarders(ctx context.Context, logStreams genericclioptions.IOStreams, options []*Option, config *restclient.Config) (*Result, error) {
+func forwarders(ctx context.Context, options []*Option, config *restclient.Config, logStreams *genericclioptions.IOStreams) (*Result, error) {
 	newOptions, err := parseOptions(options)
 	if err != nil {
 		return nil, err
@@ -72,6 +72,14 @@ func forwarders(ctx context.Context, logStreams genericclioptions.IOStreams, opt
 	podOptions, err := handleOptions(ctx, newOptions, config)
 	if err != nil {
 		return nil, err
+	}
+
+	if logStreams == nil {
+		logStreams = &genericclioptions.IOStreams{
+			In:     os.Stdin,
+			Out:    os.Stdout,
+			ErrOut: os.Stderr,
+		}
 	}
 
 	carries := make([]*carry, len(podOptions))
@@ -88,7 +96,7 @@ func forwarders(ctx context.Context, logStreams genericclioptions.IOStreams, opt
 			Pod:        option.Pod,
 			LocalPort:  option.LocalPort,
 			PodPort:    option.PodPort,
-			Streams:    logStreams,
+			Streams:    *logStreams,
 			StopCh:     stopCh,
 			ReadyCh:    readyCh,
 		}

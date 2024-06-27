@@ -2,13 +2,11 @@ package forwarder
 
 import (
 	"context"
-	"os"
 
 	"fmt"
 	"testing"
 
 	"github.com/namsral/flag"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 
 func TestBasic(t *testing.T) {
@@ -36,13 +34,7 @@ func TestBasic(t *testing.T) {
 		},
 	}
 
-	stream := genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}
-
-	ret, err := WithForwarders(context.Background(), stream, options, kubecfg)
+	ret, err := WithForwarders(context.Background(), options, kubecfg, nil)
 	if err != nil {
 		panic(err)
 	}

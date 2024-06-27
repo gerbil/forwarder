@@ -5,11 +5,9 @@ import (
 	_ "embed"
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/anthhub/forwarder"
 	"github.com/gin-gonic/gin"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
 
 	"github.com/namsral/flag"
 )
@@ -49,14 +47,8 @@ func main() {
 		},
 	}
 
-	stream := genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}
-
 	// it's to create a forwarder, and you need provide a path of kubeconfig
-	ret, err := forwarder.WithForwarders(context.Background(), stream, options, kubecfg)
+	ret, err := forwarder.WithForwarders(context.Background(), options, kubecfg, nil)
 	if err != nil {
 		panic(err)
 	}
