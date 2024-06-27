@@ -44,15 +44,9 @@ go get github.com/anthhub/forwarder
 		},
 	}
 
-	stream := genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}
-
 	// it's to create a forwarder, and you need provide a path of kubeconfig
 	// the path of kubeconfig, default is "~/.kube/config"
-	ret, err := forwarder.WithForwarders(context.Background(), stream, options, "./kubecfg")
+	ret, err := forwarder.WithForwarders(context.Background(), options, "./kubecfg", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -84,14 +78,8 @@ func main() {
 		},
 	}
 
-	stream := genericclioptions.IOStreams{
-		In:     os.Stdin,
-		Out:    os.Stdout,
-		ErrOut: os.Stderr,
-	}
-
 	// use kubeconfig bytes to config forward
-	ret, err := forwarder.WithForwardersEmbedConfig(context.Background(), stream, options, kubeconfigBytes)
+	ret, err := forwarder.WithForwardersEmbedConfig(context.Background(), options, kubeconfigBytes, nil)
 	if err != nil {
 		panic(err)
 	}
