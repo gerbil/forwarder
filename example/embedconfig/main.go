@@ -20,7 +20,7 @@ func main() {
 		},
 	}
 
-	ret, err := forwarder.WithForwardersEmbedConfig(context.Background(), options, kubeconfigBytes)
+	ret, err := forwarder.WithForwardersEmbedConfig(context.Background(), options, kubeconfigBytes, nil)
 	if err != nil {
 		panic(err)
 	}
