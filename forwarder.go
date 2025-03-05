@@ -18,6 +18,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
+	"github.com/wailsapp/wails/v3/pkg/application"
 )
 
 var once sync.Once
@@ -177,9 +178,15 @@ func portForwardAPod(req *portForwardAPodRequest) (*portforward.PortForwarder, e
 		return nil, err
 	}
 
+	// get wails app
+	wails := application.Get()
+
 	go func() {
 		if err := fw.ForwardPorts(); err != nil {
-			panic(err)
+			message := err.Error()
+			status := "error"
+			notificationJS := fmt.Sprintf("notification('%s', '%s')", status, message)
+			wails.CurrentWindow().ExecJS(notificationJS)
 		}
 	}()
 
