@@ -186,7 +186,7 @@ func portForwardAPod(req *portForwardAPodRequest) (*portforward.PortForwarder, e
 			message := err.Error()
 			status := "error"
 			notificationJS := fmt.Sprintf("notification('%s', '%s')", status, message)
-			app.Window.Current().ExecJS(notificationJS)
+			wails.Window.Current().ExecJS(notificationJS)
 		}
 	}()
 
