@@ -43,17 +43,25 @@ func WithForwardersEmbedConfig(ctx context.Context, options []*Option, kubeconfi
 
 // It is to forward port for k8s cloud services.
 // If `kubeconfigPath` is empty, the default kubeconfig location is used (e.g. `~/.kube/config`)
-func WithForwarders(ctx context.Context, options []*Option, kubeconfigPath string, logStreams *genericclioptions.IOStreams) (*Result, error) {
+func WithForwarders(ctx context.Context, options []*Option, kubeconfigPath, context string, logStreams *genericclioptions.IOStreams) (*Result, error) {
 	if kubeconfigPath == "" {
 		home, _ := os.UserHomeDir()
 
 		kubeconfigPath = path.Join(home, ".kube", "config")
 	}
 
-	config, err := clientcmd.BuildConfigFromFlags("", kubeconfigPath)
-	if err != nil {
-		return nil, err
-	}
+  fmt.Println("GetClientset() :: Using kubeconfig/context: ", kubeconfigPath, context)
+
+  rules := &clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath}
+  overrides := &clientcmd.ConfigOverrides{CurrentContext: context}
+
+  cc := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(rules, overrides)
+
+  // Build *rest.Config (includes auth from the chosen context: certs, tokens, exec plugins, etc.)
+  config, err := cc.ClientConfig()
+  if err != nil {
+    panic(err)
+  }
 
 	return forwarders(ctx, options, config, logStreams)
 }
